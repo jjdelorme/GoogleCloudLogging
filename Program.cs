@@ -43,7 +43,7 @@ namespace Sample
             string caller = System.Reflection.MethodBase.GetCurrentMethod().Name;
             if (i % 5 == 0)
             {
-                logger.LogError("Something happened on {i}!");
+                logger.LogError("Something happened in {operation} on {i}!", caller, i);
             }
             else 
             {
