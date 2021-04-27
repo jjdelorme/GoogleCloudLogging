@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Google.Cloud.Diagnostics.AspNetCore;
 
 namespace Sample
 {
@@ -11,8 +12,16 @@ namespace Sample
     {
         static async Task Main(string[] args)
         {
+            string projectId = "jasondel-test-project";
+
             using IHost host = CreateHostBuilder(args).Build();
-            var logger = host.Services.GetRequiredService<ILogger<Program>>();
+            
+            var loggerFactory = LoggerFactory.Create(builder => {
+                builder.AddProvider(GoogleLoggerProvider.Create(
+                    serviceProvider: null, 
+                    projectId));
+            });
+            var logger = loggerFactory.CreateLogger<Program>();
 
             int i = 0;
             System.Timers.Timer t = new System.Timers.Timer();
