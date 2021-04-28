@@ -14,19 +14,37 @@ namespace Sample
         {
             string projectId = "jasondel-test-project";
 
-            using IHost host = CreateHostBuilder(args).Build();
+            using IHost host = CreateHostBuilder(args)
+                .ConfigureServices(services =>
+                {
+                    services.AddGoogleExceptionLogging(options => {
+                        options.ProjectId = projectId;
+                        options.ServiceName = "MyLogger";
+                        options.Version = "V1";
+                    });
+                })
+                .Build();
             
             var loggerFactory = LoggerFactory.Create(builder => {
                 builder.AddProvider(GoogleLoggerProvider.Create(
                     serviceProvider: null, 
                     projectId));
             });
-            var logger = loggerFactory.CreateLogger<Program>();
+            ILogger logger = loggerFactory.CreateLogger<Program>();
+            IExceptionLogger exceptionLogger = 
+                host.Services.GetRequiredService<IExceptionLogger>();
 
             int i = 0;
             System.Timers.Timer t = new System.Timers.Timer();
-            t.Elapsed += (o, e) => {
-                FooBar(logger, i++);
+            t.Elapsed += (o, a) => {
+                try 
+                {
+                    FooBar(logger, i++);
+                }
+                catch (Exception e)
+                {
+                    exceptionLogger.Log(e);
+                }
             };
 
             t.Interval = 1000 * 5;
@@ -44,6 +62,11 @@ namespace Sample
             if (i % 5 == 0)
             {
                 logger.LogError("Something happened in {operation} on {i}!", caller, i);
+                
+            }
+            else if (i % 7 == 0)
+            {
+                throw new ArgumentException("We don't like this agrument.");
             }
             else 
             {
