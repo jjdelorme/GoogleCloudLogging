@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Google.Cloud.Logging.Console;
 
 namespace Sample
 {
@@ -11,7 +12,12 @@ namespace Sample
     {
         static async Task Main(string[] args)
         {
-            using IHost host = CreateHostBuilder(args).Build();
+            using IHost host = CreateHostBuilder(args)
+                 .ConfigureLogging(loggingBuilder => loggingBuilder
+                    .AddConsoleFormatter<GoogleCloudConsoleFormatter, 
+                        GoogleCloudConsoleFormatterOptions>(options => options.IncludeScopes = true)
+                    .AddConsole(options => options.FormatterName = nameof(GoogleCloudConsoleFormatter)))
+                .Build();
             var logger = host.Services.GetRequiredService<ILogger<Program>>();
 
             int i = 0;

@@ -16,4 +16,4 @@ spec:
     spec:
       containers:
       - name: logger
-        image: gcr.io/jasondel-test-project/mylogger:v4
+        image: gcr.io/jasondel-test-project/mylogger:v5.4
